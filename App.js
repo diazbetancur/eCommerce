@@ -1,11 +1,20 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View } from "react-native";
+import { I18nextProvider } from "react-i18next";
+
+import { AuthProvider } from "./src/context/AuthContext";
+import Start from "./src/screens/HomeScreen/Start";
+import i18n from "./src/assets/i18n";
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <I18nextProvider i18n={i18n}>
+        <AuthProvider>
+          <Start />
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </I18nextProvider>
     </View>
   );
 }
@@ -13,8 +22,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
   },
 });
