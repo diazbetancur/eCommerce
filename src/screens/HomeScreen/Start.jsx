@@ -4,6 +4,7 @@ import React from 'react';
 import useAuth from '../../hooks/useAuth';
 import Navigation from '../../navigation/Navigation';
 import { NotificationsProvider } from '../../context/notificationContext';
+import { CartProvider } from '../../context/CartContext';
 import LoginForm from '../../features/auth/screens/LoginFrom';
 
 export default function Start() {
@@ -13,7 +14,9 @@ export default function Start() {
     <View style={style.container}>
       {auth ? (
         <NotificationsProvider>
-          <Navigation />
+          <CartProvider>
+            <Navigation />
+          </CartProvider>
         </NotificationsProvider>
       ) : (
         <LoginForm />

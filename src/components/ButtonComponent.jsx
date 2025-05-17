@@ -4,10 +4,7 @@ import Colors from '../assets/Colors';
 
 const { width, height } = Dimensions.get('window');
 
-const Button = ({ onPress, title, buttonStyle, textStyle }) => {
-
-
-
+const Button = ({ onPress, title, buttonStyle = {}, textStyle = {} }) => {
   return (
     <TouchableOpacity onPress={onPress} style={[styles.button, buttonStyle]}>
       <Text style={[styles.text, textStyle]}>{title}</Text>
@@ -23,7 +20,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     width: width * 0.7
-
   },
   text: {
     color: '#ffffff',

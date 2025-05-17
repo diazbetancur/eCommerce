@@ -9,9 +9,7 @@ export const useProducts = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('llama');
         const data = await getAllProducts();
-        console.log(data);
         setProducts(data);
       } catch (err: any) {
         setError(err.message || 'Error al cargar productos');

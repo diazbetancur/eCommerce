@@ -13,12 +13,15 @@ import CustomHeader from '../components/CustomHeader';
 import { useNotifications } from '../context/notificationContext';
 import LoyaltyScreen from '../screens/LoyalityScreens/LoyaltyScreen';
 import Home from '../features/products/screens/home';
+import { useCart } from '../context/CartContext';
 
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
   const { t } = useTranslation();
   const { notificationsCount } = useNotifications();
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
 
   return (
     <NavigationContainer>
@@ -44,7 +47,7 @@ export default function Navigation() {
           component={Home}
           options={{
             headerTitle: () => (
-              <CustomHeader imageSource={require('./../assets/images/loging.png')} />
+              <CustomHeader imageSource={require('./../assets/images/iconLogo.png')} />
             ),
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="home" color={color} size={size} />
@@ -52,14 +55,14 @@ export default function Navigation() {
             headerRight: () => (
               <View style={style.notificationContainer}>
                 <MaterialCommunityIcons
-                  name="bell"
+                  name="cart-variant"
                   size={25}
                   color={Colors.BLUE}
                   onPress={() => console.log('Ir a notificaciones')}
                 />
-                {notificationsCount > 0 && (
+                {cartCount > 0 && (
                   <View style={style.notificationBadge}>
-                    <Text style={style.badgeText}>{notificationsCount}</Text>
+                    <Text style={style.badgeText}>{cartCount}</Text>
                   </View>
                 )}
               </View>
