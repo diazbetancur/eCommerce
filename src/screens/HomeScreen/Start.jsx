@@ -4,7 +4,7 @@ import React from 'react';
 import useAuth from '../../hooks/useAuth';
 import Navigation from '../../navigation/Navigation';
 import { NotificationsProvider } from '../../context/notificationContext';
-import LoginForm from '../../features/auth/services/LoginFrom';
+import LoginForm from '../../features/auth/screens/LoginFrom';
 
 export default function Start() {
   const { auth } = useAuth();

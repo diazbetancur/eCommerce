@@ -1,17 +1,15 @@
 import { View, Image, StyleSheet, Alert, Dimensions } from 'react-native';
 import React, { useState } from 'react';
 import { Icon, Input } from 'react-native-elements';
-
-import Colors from '../../assets/Colors';
-import Button from '../../components/ButtonComponent';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 import { useTranslation } from 'react-i18next';
-
-import useAuth from '../../hooks/useAuth';
+import Colors from '../../../assets/Colors';
+import Button from '../../../components/ButtonComponent';
+import useAuth from '../../../hooks/useAuth';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../credentials';
+import { auth } from '../../../credentials';
 
 const { width } = Dimensions.get('window');
 
@@ -35,6 +33,7 @@ export default function LoginForm() {
         console.log(userCredential.user);
         login(userCredential.user);
       } catch (error) {
+        console.log(error);
         Alert.alert('Error', t('errorLogin'), [{ text: 'OK' }]);
       }
     }
@@ -42,7 +41,7 @@ export default function LoginForm() {
 
   return (
     <View style={style.container}>
-      <Image source={require('./../../assets/images/loging.png')} style={style.image} />
+      <Image source={require('../../../assets/images/loging.png')} style={style.image} />
       <View style={style.containerForm}>
         <View style={style.containerInput}>
           <Input
