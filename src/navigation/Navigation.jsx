@@ -7,12 +7,12 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useTranslation } from 'react-i18next';
 
 import Colors from '../assets/Colors';
-import HomeLogged from '../screens/HomeScreen/HomeLogged/homeLogged';
 import AccountLogged from '../screens/AccountScreens/AccountLogged';
 import OfferLogged from '../screens/OfferScreens/Offer';
 import CustomHeader from '../components/CustomHeader';
 import { useNotifications } from '../context/notificationContext';
 import LoyaltyScreen from '../screens/LoyalityScreens/LoyaltyScreen';
+import Home from '../features/products/screens/home';
 
 const Tab = createBottomTabNavigator();
 
@@ -41,7 +41,7 @@ export default function Navigation() {
         />
         <Tab.Screen
           name={t('tabHome')}
-          component={HomeLogged}
+          component={Home}
           options={{
             headerTitle: () => (
               <CustomHeader imageSource={require('./../assets/images/loging.png')} />
