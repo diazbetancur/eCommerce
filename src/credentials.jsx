@@ -1,21 +1,21 @@
-import { initializeApp } from "firebase/app";
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { initializeApp } from 'firebase/app';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC28eg_W6NZTjoxuguYvYAC7DQVEGQ_y74",
-  authDomain: "ampm-e9584.firebaseapp.com",
-  projectId: "ampm-e9584",
-  storageBucket: "ampm-e9584.firebasestorage.app",
-  messagingSenderId: "86678936229",
-  appId: "1:86678936229:web:805f5874e4a3c5e76e4b4c",
-  measurementId: "G-TXZT834YJS",
+  apiKey: 'AIzaSyDGgwF_qmH-CZMbYAiJMLRoXr5uMJAuqAA',
+  authDomain: 'ecommerce-be624.firebaseapp.com',
+  projectId: 'ecommerce-be624',
+  storageBucket: 'ecommerce-be624.firebasestorage.app',
+  messagingSenderId: '922254729614',
+  appId: '1:922254729614:web:ebad661237e0af40c744df',
+  measurementId: 'G-N518P5BMEG'
 };
 
 const appFirebase = initializeApp(firebaseConfig);
 
 const auth = initializeAuth(appFirebase, {
-  persistence: getReactNativePersistence(AsyncStorage),
+  persistence: getReactNativePersistence(AsyncStorage)
 });
 
 export { appFirebase, auth };
