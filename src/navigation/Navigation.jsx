@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,6 +14,7 @@ import { useNotifications } from '../context/notificationContext';
 import LoyaltyScreen from '../screens/LoyalityScreens/LoyaltyScreen';
 import Home from '../features/products/screens/home';
 import { useCart } from '../context/CartContext';
+import CartScreen from '../features/cart/screens/CartScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,9 +23,10 @@ export default function Navigation() {
   const { notificationsCount } = useNotifications();
   const { getCartCount } = useCart();
   const cartCount = getCartCount();
+  const navigationRef = useNavigationContainerRef();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Tab.Navigator
         initialRouteName={t('tabHome')}
         screenOptions={{
@@ -39,6 +41,16 @@ export default function Navigation() {
           options={{
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="brightness-percent" color={color} size={size} />
+            )
+          }}
+        />
+        <Tab.Screen
+          name="Loyalty"
+          component={LoyaltyScreen}
+          options={{
+            tabBarLabel: 'Lealtad',
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="star-outline" size={size} color={color} />
             )
           }}
         />
@@ -58,7 +70,7 @@ export default function Navigation() {
                   name="cart-variant"
                   size={25}
                   color={Colors.BLUE}
-                  onPress={() => console.log('Ir a notificaciones')}
+                  onPress={() => navigationRef.navigate('Carrito')}
                 />
                 {cartCount > 0 && (
                   <View style={style.notificationBadge}>
@@ -70,15 +82,15 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen
-          name="Loyalty"
-          component={LoyaltyScreen}
+          name="Carrito"
+          component={CartScreen}
           options={{
-            tabBarLabel: 'Lealtad',
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="star-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="cart" color={color} size={size} />
             )
           }}
-        />
+        ></Tab.Screen>
+
         <Tab.Screen
           name={t('Account')}
           component={AccountLogged}

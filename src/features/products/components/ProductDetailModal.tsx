@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, Modal, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Colors from '../../../assets/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../../components/ButtonComponent';
+import { useEffect } from 'react';
 
 type Props = {
   visible: boolean;
@@ -16,6 +17,12 @@ export default function ProductDetailModal({ visible, onClose, product, onAddToC
 
   const increase = () => setQuantity((q) => q + 1);
   const decrease = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
+  useEffect(() => {
+    if (visible) {
+      setQuantity(1);
+    }
+  }, [visible]);
 
   if (!product) return null;
 
