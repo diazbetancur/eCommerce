@@ -1,10 +1,10 @@
-import { StyleSheet, View } from "react-native";
-import React from "react";
+import { StyleSheet, View } from 'react-native';
+import React from 'react';
 
-import useAuth from "../../hooks/useAuth";
-import LoginForm from "../LoginScreen/LoginFrom";
-import Navigation from "../../navigation/Navigation";
-import { NotificationsProvider } from "../../context/notificationContext";
+import useAuth from '../../hooks/useAuth';
+import Navigation from '../../navigation/Navigation';
+import { NotificationsProvider } from '../../context/notificationContext';
+import LoginForm from '../../features/auth/services/LoginFrom';
 
 export default function Start() {
   const { auth } = useAuth();
@@ -24,6 +24,6 @@ export default function Start() {
 
 const style = StyleSheet.create({
   container: {
-    flex: 1,
-  },
+    flex: 1
+  }
 });
