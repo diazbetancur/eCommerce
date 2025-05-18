@@ -1,14 +1,14 @@
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import React, { useState, createContext, useEffect } from "react";
-import { auth } from "../credentials";
-import { Alert } from "react-native";
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import React, { useState, createContext, useEffect } from 'react';
+import { auth } from '../credentials';
+import { Alert } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
 
 export const AuthContext = createContext({
   auth: undefined,
   login: () => {},
-  logout: () => {},
+  logout: () => {}
 });
 
 export function AuthProvider(props) {
@@ -31,20 +31,18 @@ export function AuthProvider(props) {
   const logout = async () => {
     try {
       await signOut(auth);
-      setAuthUser(undefined); 
+      setAuthUser(undefined);
     } catch (error) {
-      Alert.alert("Error", t('errorLogout'),[{ text: "OK" }])
-      console.error("Error closing session:", error);
+      Alert.alert('Error', t('errorLogout'), [{ text: 'OK' }]);
+      console.error('Error closing session:', error);
     }
   };
 
   const valueContext = {
     auth: authUser,
     login,
-    logout,
+    logout
   };
 
-  return (
-    <AuthContext.Provider value={valueContext}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={valueContext}>{children}</AuthContext.Provider>;
 }
