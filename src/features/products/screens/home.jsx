@@ -1,13 +1,11 @@
-import { View, StyleSheet, Text, FlatList, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import Colors from '../../../assets/Colors';
+import { useCart } from '../../../context/CartContext';
 import useAuth from '../../../hooks/useAuth';
-import InfinitePoints from '../../../components/InfinitePoints';
-import Carousel from '../../../components/carousel';
-import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import ProductDetailModal from '../components/ProductDetailModal';
-import { useCart } from '../../../context/CartContext';
+import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
   const { auth } = useAuth();
@@ -15,19 +13,36 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const { addToCart } = useCart();
+  const [search, setSearch] = useState('');
 
   const handleAddToCart = (product, quantity) => {
     addToCart(product, quantity);
     setModalVisible(false);
   };
 
+  const filteredProducts = products.filter((product) => {
+    const term = search.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(term) ||
+      product.description?.toLowerCase().includes(term) ||
+      product.category?.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <View style={style.container}>
+      <TextInput
+        placeholder="Buscar productos..."
+        value={search}
+        onChangeText={setSearch}
+        style={style.searchInput}
+      />
+
       {/* <Carousel style={style.banner} banners={banners} /> */}
       {loading && <ActivityIndicator size="large" color={Colors.BLUE} />}
       {error && <Text style={style.error}>Error: {error}</Text>}
       <FlatList
-        data={products}
+        data={filteredProducts}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={style.productList}
@@ -87,5 +102,13 @@ const style = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     marginTop: 20
+  },
+  searchInput: {
+    height: 40,
+    borderColor: Colors.GRAY,
+    borderWidth: 1,
+    borderRadius: 8,
+    margin: 10,
+    paddingHorizontal: 10
   }
 });
