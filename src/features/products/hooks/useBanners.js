@@ -15,7 +15,6 @@ export const useBanners = () => {
         if (snapshot.exists()) {
           const data = snapshot.data();
           const bannerList = Object.values(data);
-          console.log(bannerList);
           setBanners(bannerList);
         } else {
           setBanners([]);
