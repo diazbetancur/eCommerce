@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import Colors from '../../../assets/Colors';
+import Carousel from '../../../components/carousel';
 import { useCart } from '../../../context/CartContext';
 import useAuth from '../../../hooks/useAuth';
 import ProductCard from '../components/ProductCard';
 import ProductDetailModal from '../components/ProductDetailModal';
+import { useBanners } from '../hooks/useBanners';
 import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
@@ -14,6 +16,7 @@ export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
   const { addToCart } = useCart();
   const [search, setSearch] = useState('');
+  const { banners, loading: bannersLoading, error: bannerError } = useBanners();
 
   const handleAddToCart = (product, quantity) => {
     addToCart(product, quantity);
@@ -31,6 +34,12 @@ export default function Home() {
 
   return (
     <View style={style.container}>
+      {bannersLoading && <ActivityIndicator size="large" color={Colors.BLUE} />}
+      {banners.length > 0 && (
+        <View style={{ height: 160 }}>
+          <Carousel banners={banners} />
+        </View>
+      )}
       <TextInput
         placeholder="Buscar productos..."
         value={search}
