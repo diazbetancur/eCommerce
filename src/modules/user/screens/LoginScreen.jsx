@@ -1,21 +1,18 @@
 import { useFormik } from 'formik';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Dimensions, Image, StyleSheet, View } from 'react-native';
 import { Icon, Input } from 'react-native-elements';
 import * as Yup from 'yup';
-
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useTranslation } from 'react-i18next';
 import Colors from '../../../assets/Colors';
 import Button from '../../../components/ButtonComponent';
-import { auth } from '../../../credentials';
-import useAuth from '../../../hooks/useAuth';
+import { AuthService } from '../../../core/services/auth.service';
 
 const { width } = Dimensions.get('window');
+const authService = new AuthService();
 
-export default function LoginForm() {
+export default function LoginScreen() {
   const [showIcon, setShowIcon] = useState(true);
-  const { login } = useAuth();
   const { t } = useTranslation();
 
   const toggleShowPassword = () => {
@@ -28,8 +25,9 @@ export default function LoginForm() {
     onSubmit: async (formValues) => {
       const { userName, password } = formValues;
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, userName, password);
-        login(userCredential.user);
+        const user = await authService.login(userName, password);
+        // Aquí puedes guardar el usuario en contexto o navegar
+        Alert.alert('Login exitoso', t('welcome'), [{ text: 'OK' }]);
       } catch (error) {
         console.log(error);
         Alert.alert('Error', t('errorLogin'), [{ text: 'OK' }]);
@@ -58,65 +56,58 @@ export default function LoginForm() {
             rightIcon={
               <Icon
                 name={showIcon ? 'visibility' : 'visibility-off'}
+                onPress={toggleShowPassword}
                 size={24}
                 color={Colors.PRIMARY}
-                onPress={toggleShowPassword}
               />
             }
-            leftIcon={<Icon name="password" size={24} color={Colors.PRIMARY} />}
             value={formik.values.password}
             onChangeText={(text) => formik.setFieldValue('password', text)}
             errorMessage={formik.errors.password}
             errorStyle={{ color: 'red' }}
           />
         </View>
-
-        <Button onPress={formik.handleSubmit} title={t('btnLoggin')} />
+        <Button title={t('login')} onPress={formik.handleSubmit} />
       </View>
     </View>
   );
 }
 
 function initalValues() {
-  return { userName: '', password: '' };
+  return {
+    userName: '',
+    password: ''
+  };
 }
 
 function validationSchema(t) {
   return {
-    userName: Yup.string().required(t('errorUser')),
-    password: Yup.string().required(t('errorPassword'))
+    userName: Yup.string().required(t('required')),
+    password: Yup.string().required(t('required'))
   };
 }
 
 const style = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.WHITE,
-    flexDirection: 'column'
-  },
-  containerForm: {
-    margin: 20,
-    backgroundColor: Colors.WHITE,
-    borderRadius: 20,
-    width: '90%',
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: 'center'
-  },
-  containerInput: {
-    marginVertical: 30,
-    width: '100%'
   },
   image: {
-    marginBottom: 15,
+    width: width * 0.5,
+    height: width * 0.3,
     resizeMode: 'contain',
-    width: width * 0.6,
-    height: width * 0.6
-  }
+    marginBottom: 16,
+  },
+  containerForm: {
+    width: '90%',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    padding: 16,
+    elevation: 2,
+  },
+  containerInput: {
+    marginBottom: 16,
+  },
 });

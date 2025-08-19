@@ -4,6 +4,7 @@ import Colors from '../../../assets/Colors';
 import Carousel from '../../../components/carousel';
 import { useCart } from '../../../context/CartContext';
 import useAuth from '../../../hooks/useAuth';
+import CategoriesList from '../components/CategoriesList';
 import ProductCard from '../components/ProductCard';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { useBanners } from '../hooks/useBanners';
@@ -17,6 +18,7 @@ export default function Home() {
   const { addToCart } = useCart();
   const [search, setSearch] = useState('');
   const { banners, loading: bannersLoading, error: bannerError } = useBanners();
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const handleAddToCart = (product, quantity) => {
     addToCart(product, quantity);
@@ -25,11 +27,14 @@ export default function Home() {
 
   const filteredProducts = products.filter((product) => {
     const term = search.toLowerCase();
-    return (
+    const matchesSearch =
       product.name.toLowerCase().includes(term) ||
       product.description?.toLowerCase().includes(term) ||
-      product.category?.toLowerCase().includes(term)
-    );
+      product.category?.toLowerCase().includes(term);
+
+    const matchesCategory = !selectedCategoryId || product.categoryId === selectedCategoryId;
+
+    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -40,16 +45,15 @@ export default function Home() {
           <Carousel banners={banners} />
         </View>
       )}
+      {bannerError && <Text style={style.error}>{bannerError}</Text>}
+      <CategoriesList onCategorySelected={(id) => setSelectedCategoryId(id)} />
+      {loading && <ActivityIndicator size="large" color={Colors.BLUE} />}
       <TextInput
         placeholder="Buscar productos..."
         value={search}
         onChangeText={setSearch}
         style={style.searchInput}
       />
-
-      {/* <Carousel style={style.banner} banners={banners} /> */}
-      {loading && <ActivityIndicator size="large" color={Colors.BLUE} />}
-      {error && <Text style={style.error}>Error: {error}</Text>}
       <FlatList
         data={filteredProducts}
         keyExtractor={(item) => item.id.toString()}
