@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { fetchCategories } from '../../../api/categoryService';
 import Colors from '../../../assets/Colors';
 import { useCart } from '../../../core/context/CartContext';
 import BannerCarousel from '../components/BannerCarousel';
+import CategoryList from '../components/CategoryList';
 import ProductDetailModal from '../components/ProductDetailModal';
+import ProductList from '../components/ProductList';
 import { useBanners } from '../hooks/useBanners';
 import { useProducts } from '../hooks/useProducts';
 
 export default function HomeScreen() {
-  const { products, loading, error, filters, setFilters } = useProducts();
+  const { products: allProducts, loading, error, filters, setFilters } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -36,17 +38,27 @@ export default function HomeScreen() {
 
   // Generar filtros dinámicos
   const filterOptions = {};
-  products.forEach(product => {
-    Object.keys(product).forEach(key => {
-      if (['category', 'subcategory', 'name', 'description', 'id', 'image', 'price'].includes(key)) return;
-      if (!filterOptions[key]) filterOptions[key] = new Set();
-      if (product[key]) filterOptions[key].add(product[key]);
+  if (Array.isArray(products)) {
+    products.forEach(product => {
+      Object.keys(product).forEach(key => {
+        if (["category", "subcategory", "name", "description", "id", "image", "price"].includes(key)) return;
+        if (!filterOptions[key]) filterOptions[key] = new Set();
+        if (product[key]) filterOptions[key].add(product[key]);
+      });
     });
-  });
+  }
 
-  // Subcategorías basadas en la categoría seleccionada
-  const subcategories = filters.category ? 
-    [...new Set(products.filter(p => p.category === filters.category).map(p => p.subcategory))].filter(Boolean) : 
+  // Filtrado de productos por categoría seleccionada
+  let products = allProducts;
+  if (filters.category) {
+    products = allProducts.filter(product =>
+      product.productCategories?.some(cat => cat.categoryId === filters.category)
+    );
+  }
+
+  // Subcategorías basadas en la categoría seleccionada (usando productos filtrados)
+  const subcategories = filters.category ?
+    [...new Set(products.filter(p => p.category === filters.category).map(p => p.subcategory))].filter(Boolean) :
     [];
 
   const handleAddToCart = (product, quantity) => {
@@ -57,22 +69,11 @@ export default function HomeScreen() {
   // Función para limpiar todos los filtros dinámicos
   const clearAllFilters = () => {
     const clearedFilters = { search: '', category: '', subcategory: '' };
-    // Limpiar también los filtros dinámicos
     Object.keys(filterOptions).forEach(key => {
       clearedFilters[key] = '';
     });
     setFilters(clearedFilters);
   };
-
-  const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity 
-      style={style.categoryCard} 
-      onPress={() => setFilters(f => ({ ...f, category: item.name, subcategory: '' }))}
-    >
-      <Image source={{ uri: item.icon }} style={style.categoryImg} resizeMode="contain" />
-      <Text style={style.categoryName}>{item.name}</Text>
-    </TouchableOpacity>
-  );
 
   const renderFilterButton = (item, filterKey) => (
     <TouchableOpacity
@@ -86,53 +87,10 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderProductItem = ({ item }) => (
-    <TouchableOpacity 
-      style={style.productCard} 
-      onPress={() => { 
-        setSelectedProduct(item); 
-        setModalVisible(true); 
-      }}
-    >
-      <Image source={{ uri: item.image }} style={style.productImg} />
-      <Text style={style.productName} numberOfLines={2}>{item.name}</Text>
-      <Text style={style.productDesc} numberOfLines={2}>
-        {item.description?.slice(0, 50)}{item.description?.length > 50 ? '...' : ''}
-      </Text>
-      <Text style={style.productPrice}>${item.price}</Text>
-    </TouchableOpacity>
-  );
-
-  const renderListHeader = () => (
-    <>
-      {/* Categorías */}
-      <View style={style.categoriesRow}>
-        {categoriesLoading ? (
-          <ActivityIndicator size="small" color={Colors.BLUE} />
-        ) : categoriesError ? (
-          <Text style={style.error}>{categoriesError}</Text>
-        ) : (
-          <FlatList
-            horizontal
-            data={categories}
-            keyExtractor={item => item.id.toString()}
-            renderItem={renderCategoryItem}
-            showsHorizontalScrollIndicator={false}
-          />
-        )}
-      </View>
-
-      {/* Carrusel de banners */}
-      {!bannersLoading && (
-        <BannerCarousel banners={banners} loading={bannersLoading} error={bannerError} />
-      )}
-      {bannersLoading && <ActivityIndicator size="large" color={Colors.BLUE} />}
-    </>
-  );
-
-  return (
-    <View style={style.container}>
-      {/* Barra de búsqueda */}
+  // Header fijo arriba
+  const renderHeader = () => (
+    <View>
+      {/* Barra de búsqueda y filtro */}
       <View style={style.searchContainerSmall}>
         <MaterialCommunityIcons name="magnify" size={22} color={Colors.GRAY} style={{ marginLeft: 10 }} />
         <TextInput
@@ -157,35 +115,8 @@ export default function HomeScreen() {
       {/* Panel de filtros expandible */}
       {filtersExpanded && (
         <View style={style.filtersPanel}>
-          {/* Filtro de categorías */}
-          <View style={style.filtersRow}>
-            <Text style={style.filterLabel}>Categoría:</Text>
-            <View style={style.filterButtonsContainer}>
-              {categoriesLoading ? (
-                <ActivityIndicator size="small" color={Colors.BLUE} />
-              ) : categoriesError ? (
-                <Text style={style.error}>{categoriesError}</Text>
-              ) : (
-                <FlatList
-                  horizontal
-                  data={categories}
-                  keyExtractor={item => item.id.toString()}
-                  renderItem={({ item }) => renderFilterButton(item.name, 'category')}
-                  showsHorizontalScrollIndicator={false}
-                />
-              )}
-            </View>
-            <TouchableOpacity 
-              style={style.clearBtn} 
-              onPress={() => setFilters(f => ({ ...f, category: '', subcategory: '' }))}
-            >
-              <MaterialCommunityIcons name="close-circle-outline" size={20} color={Colors.RED} />
-              <Text style={style.clearBtnText}>Limpiar</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Filtro de subcategorías */}
-          {subcategories.length > 1 && (
+          {/* Subcategoría */}
+          {subcategories.length > 0 && (
             <View style={style.filtersRow}>
               <Text style={style.filterLabel}>Subcategoría:</Text>
               <View style={style.filterButtonsContainer}>
@@ -245,32 +176,39 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Lista de productos */}
-      {loading ? (
-        <View style={style.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.BLUE} />
-        </View>
-      ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          renderItem={renderProductItem}
-          contentContainerStyle={style.productsList}
-          ListHeaderComponent={renderListHeader}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      {/* Categorías */}
+      <CategoryList
+        categories={categories}
+        loading={categoriesLoading}
+        error={categoriesError}
+        selectedCategory={filters.category}
+        onSelectCategory={catId =>
+          setFilters(f => ({
+            ...f,
+            category: f.category === catId ? '' : catId,
+            subcategory: ''
+          }))
+        }
+      />
 
-      {/* Modal de detalle del producto */}
+      {/* Banners */}
+      <BannerCarousel banners={banners} loading={bannersLoading} error={bannerError} />
+    </View>
+  );
+
+  return (
+    <View style={style.container}>
+      {renderHeader()}
+      <ProductList
+        products={products}
+        onSelectProduct={item => { setSelectedProduct(item); setModalVisible(true); }}
+      />
       <ProductDetailModal
         visible={modalVisible}
         product={selectedProduct}
         onClose={() => setModalVisible(false)}
         onAddToCart={handleAddToCart}
       />
-
-      {/* Mensaje de error */}
       {error && <Text style={style.error}>{error}</Text>}
     </View>
   );

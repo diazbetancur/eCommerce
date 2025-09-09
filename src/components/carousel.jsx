@@ -18,11 +18,9 @@ export default function Carousel({ banners }) {
     return () => clearInterval(interval);
   }, [currentPage, banners.length]);
 
-        const handlePress = () => {
+  const handlePress = (banner) => {
     if (banner.linkUrl) {
-      Linking.openURL(banner.linkUrl).catch(err =>
-        console.error("No se pudo abrir la URL:", err)
-      );
+
     }
   };
 
@@ -36,7 +34,7 @@ export default function Carousel({ banners }) {
       >
         {banners.map((banner, index) => (
           <View style={styles.page} key={index}>
-            <TouchableOpacity onPress={handlePress}>
+            <TouchableOpacity onPress={handlePress(banner)}>
               <Image source={{ uri: banner.imageUrl }} style={[styles.image, { width: width - 40 }]} />
             </TouchableOpacity>
           </View>

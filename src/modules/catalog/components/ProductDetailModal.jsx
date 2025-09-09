@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Carousel from '../../../components/carousel';
 
 export default function ProductDetailModal({ visible, product, onClose, onAddToCart }) {
   const [descExpanded, setDescExpanded] = useState(false);
@@ -22,7 +23,6 @@ export default function ProductDetailModal({ visible, product, onClose, onAddToC
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          {/* Header con botones */}
           <View style={styles.headerRow}>
             <TouchableOpacity style={styles.circleBtn} onPress={onClose}>
               <MaterialCommunityIcons name="close" size={24} color="#222" />
@@ -32,11 +32,12 @@ export default function ProductDetailModal({ visible, product, onClose, onAddToC
               <MaterialCommunityIcons name="heart-outline" size={24} color="#222" />
             </TouchableOpacity>
           </View>
-          {/* Imagen */}
-          <Image
-            source={product.image ? { uri: product.image } : require('../../../assets/images/defualt-category.png')}
+          <Carousel
+            banners={product.productImages && product.productImages.length > 0
+              ? product.productImages.map(img => ({ imageUrl: img.imageUrl }))
+              : [{ imageUrl: require('../../../assets/images/defualt-category.png') }]
+            }
             style={[styles.productImg, { width: screenWidth - 32, height: imageHeight }]}
-            resizeMode="contain"
           />
           {/* Nombre */}
           <Text style={styles.name}>{product.name || 'Sin nombre'}</Text>

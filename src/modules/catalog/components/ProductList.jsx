@@ -2,9 +2,6 @@ import React from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export default function ProductList({ products, onSelectProduct }) {
-
-
-  console.log(products)
   return (
     <FlatList
       data={products}
@@ -12,9 +9,7 @@ export default function ProductList({ products, onSelectProduct }) {
       numColumns={2}
       renderItem={({ item }) => {
         const primaryImage = item.productImages.find(img => img.isPrimary) || item.productImages[0];
-        console.log('Product:', item);
-        console.log('Primary Image:', primaryImage);
-        const imageSource = primaryImage?.imageUrl || 'https://via.placeholder.com/100'; // Puedes cambiar por tu imagen local
+        const imageSource = primaryImage?.imageUrl || 'https://via.placeholder.com/100';
         return (        
           <TouchableOpacity style={styles.card} onPress={() => onSelectProduct(item)}>
             <Image source={{ uri: imageSource }} style={styles.img} />
