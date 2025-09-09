@@ -1,43 +1,138 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { fetchCategories } from '../../../api/categoryService';
 import Colors from '../../../assets/Colors';
-import Carousel from '../../../components/carousel';
 import { useCart } from '../../../core/context/CartContext';
-
-
-
+import BannerCarousel from '../components/BannerCarousel';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { useBanners } from '../hooks/useBanners';
 import { useProducts } from '../hooks/useProducts';
 
-// Filtros mock
-const brands = ['Nike', 'Adidas', 'Samsung'];
-const colors = ['Azul', 'Negro', 'Gris'];
-const sizes = ['M', '42', ''];
-
-
 export default function HomeScreen() {
-
   const { products, loading, error, filters, setFilters } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const { addToCart } = useCart();
   const { banners, loading: bannersLoading, error: bannerError } = useBanners();
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
 
-  // Categorías y subcategorías
-  const categories = [...new Set(products.map(p => p.category))];
-  const subcategories = filters.category ? [...new Set(products.filter(p => p.category === filters.category).map(p => p.subcategory))].filter(Boolean) : [];
+  useEffect(() => {
+    setCategoriesLoading(true);
+    fetchCategories()
+      .then(data => {
+        setCategories(data);
+        setCategoriesLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setCategoriesError('Error al cargar categorías');
+        setCategoriesLoading(false);
+      });
+  }, []);
+
+  // Generar filtros dinámicos
+  const filterOptions = {};
+  products.forEach(product => {
+    Object.keys(product).forEach(key => {
+      if (['category', 'subcategory', 'name', 'description', 'id', 'image', 'price'].includes(key)) return;
+      if (!filterOptions[key]) filterOptions[key] = new Set();
+      if (product[key]) filterOptions[key].add(product[key]);
+    });
+  });
+
+  // Subcategorías basadas en la categoría seleccionada
+  const subcategories = filters.category ? 
+    [...new Set(products.filter(p => p.category === filters.category).map(p => p.subcategory))].filter(Boolean) : 
+    [];
 
   const handleAddToCart = (product, quantity) => {
     addToCart(product, quantity);
     setModalVisible(false);
   };
 
+  // Función para limpiar todos los filtros dinámicos
+  const clearAllFilters = () => {
+    const clearedFilters = { search: '', category: '', subcategory: '' };
+    // Limpiar también los filtros dinámicos
+    Object.keys(filterOptions).forEach(key => {
+      clearedFilters[key] = '';
+    });
+    setFilters(clearedFilters);
+  };
+
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity 
+      style={style.categoryCard} 
+      onPress={() => setFilters(f => ({ ...f, category: item.name, subcategory: '' }))}
+    >
+      <Image source={{ uri: item.icon }} style={style.categoryImg} resizeMode="contain" />
+      <Text style={style.categoryName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderFilterButton = (item, filterKey) => (
+    <TouchableOpacity
+      key={item}
+      style={[style.filterBtn, filters[filterKey] === item && style.filterBtnActive]}
+      onPress={() => setFilters(f => ({ ...f, [filterKey]: item }))}
+    >
+      <Text style={[style.filterBtnText, filters[filterKey] === item && style.filterBtnActiveText]}>
+        {item}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderProductItem = ({ item }) => (
+    <TouchableOpacity 
+      style={style.productCard} 
+      onPress={() => { 
+        setSelectedProduct(item); 
+        setModalVisible(true); 
+      }}
+    >
+      <Image source={{ uri: item.image }} style={style.productImg} />
+      <Text style={style.productName} numberOfLines={2}>{item.name}</Text>
+      <Text style={style.productDesc} numberOfLines={2}>
+        {item.description?.slice(0, 50)}{item.description?.length > 50 ? '...' : ''}
+      </Text>
+      <Text style={style.productPrice}>${item.price}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderListHeader = () => (
+    <>
+      {/* Categorías */}
+      <View style={style.categoriesRow}>
+        {categoriesLoading ? (
+          <ActivityIndicator size="small" color={Colors.BLUE} />
+        ) : categoriesError ? (
+          <Text style={style.error}>{categoriesError}</Text>
+        ) : (
+          <FlatList
+            horizontal
+            data={categories}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderCategoryItem}
+            showsHorizontalScrollIndicator={false}
+          />
+        )}
+      </View>
+
+      {/* Carrusel de banners */}
+      {!bannersLoading && (
+        <BannerCarousel banners={banners} loading={bannersLoading} error={bannerError} />
+      )}
+      {bannersLoading && <ActivityIndicator size="large" color={Colors.BLUE} />}
+    </>
+  );
+
   return (
     <View style={style.container}>
-      {/* Buscador ovalado reducido con icono filtro al final */}
+      {/* Barra de búsqueda */}
       <View style={style.searchContainerSmall}>
         <MaterialCommunityIcons name="magnify" size={22} color={Colors.GRAY} style={{ marginLeft: 10 }} />
         <TextInput
@@ -47,136 +142,152 @@ export default function HomeScreen() {
           style={style.searchInputFull}
           placeholderTextColor={Colors.GRAY}
         />
-        <TouchableOpacity onPress={() => setFiltersExpanded(!filtersExpanded)} style={style.filterIconBtnSmall}>
-          <MaterialCommunityIcons name="filter-variant" size={24} color="#222" />
+        <TouchableOpacity 
+          onPress={() => setFiltersExpanded(!filtersExpanded)} 
+          style={style.filterIconBtnSmall}
+        >
+          <MaterialCommunityIcons 
+            name={filtersExpanded ? "filter-minus" : "filter-variant"} 
+            size={24} 
+            color="#222" 
+          />
         </TouchableOpacity>
       </View>
+
+      {/* Panel de filtros expandible */}
       {filtersExpanded && (
         <View style={style.filtersPanel}>
-          {/* Filtros avanzados */}
+          {/* Filtro de categorías */}
           <View style={style.filtersRow}>
-            <Text>Categoría:</Text>
-            <FlatList
-              horizontal
-              data={categories}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <Text style={[style.filterBtn, filters.category === item && style.filterBtnActive]} onPress={() => setFilters(f => ({ ...f, category: item, subcategory: '' }))}>{item}</Text>
+            <Text style={style.filterLabel}>Categoría:</Text>
+            <View style={style.filterButtonsContainer}>
+              {categoriesLoading ? (
+                <ActivityIndicator size="small" color={Colors.BLUE} />
+              ) : categoriesError ? (
+                <Text style={style.error}>{categoriesError}</Text>
+              ) : (
+                <FlatList
+                  horizontal
+                  data={categories}
+                  keyExtractor={item => item.id.toString()}
+                  renderItem={({ item }) => renderFilterButton(item.name, 'category')}
+                  showsHorizontalScrollIndicator={false}
+                />
               )}
-              showsHorizontalScrollIndicator={false}
-            />
+            </View>
+            <TouchableOpacity 
+              style={style.clearBtn} 
+              onPress={() => setFilters(f => ({ ...f, category: '', subcategory: '' }))}
+            >
+              <MaterialCommunityIcons name="close-circle-outline" size={20} color={Colors.RED} />
+              <Text style={style.clearBtnText}>Limpiar</Text>
+            </TouchableOpacity>
           </View>
+
+          {/* Filtro de subcategorías */}
           {subcategories.length > 1 && (
             <View style={style.filtersRow}>
-              <Text>Subcategoría:</Text>
-              <FlatList
-                horizontal
-                data={subcategories}
-                keyExtractor={item => item}
-                renderItem={({ item }) => (
-                  <Text style={[style.filterBtn, filters.subcategory === item && style.filterBtnActive]} onPress={() => setFilters(f => ({ ...f, subcategory: item }))}>{item}</Text>
-                )}
-                showsHorizontalScrollIndicator={false}
-              />
+              <Text style={style.filterLabel}>Subcategoría:</Text>
+              <View style={style.filterButtonsContainer}>
+                <FlatList
+                  horizontal
+                  data={subcategories}
+                  keyExtractor={item => item}
+                  renderItem={({ item }) => renderFilterButton(item, 'subcategory')}
+                  showsHorizontalScrollIndicator={false}
+                />
+              </View>
+              <TouchableOpacity 
+                style={style.clearBtn} 
+                onPress={() => setFilters(f => ({ ...f, subcategory: '' }))}
+              >
+                <MaterialCommunityIcons name="close-circle-outline" size={20} color={Colors.RED} />
+                <Text style={style.clearBtnText}>Limpiar</Text>
+              </TouchableOpacity>
             </View>
           )}
-          <View style={style.filtersRow}>
-            <Text>Marca:</Text>
-            <FlatList
-              horizontal
-              data={brands}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <Text style={[style.filterBtn, filters.brand === item && style.filterBtnActive]} onPress={() => setFilters(f => ({ ...f, brand: item }))}>{item}</Text>
-              )}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-          <View style={style.filtersRow}>
-            <Text>Color:</Text>
-            <FlatList
-              horizontal
-              data={colors}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <Text style={[style.filterBtn, filters.color === item && style.filterBtnActive]} onPress={() => setFilters(f => ({ ...f, color: item }))}>{item}</Text>
-              )}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-          <View style={style.filtersRow}>
-            <Text>Talla:</Text>
-            <FlatList
-              horizontal
-              data={sizes}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <Text style={[style.filterBtn, filters.size === item && style.filterBtnActive]} onPress={() => setFilters(f => ({ ...f, size: item }))}>{item}</Text>
-              )}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
+
+          {/* Filtros dinámicos */}
+          {Object.entries(filterOptions)
+            .filter(([_, values]) => values.size > 0)
+            .map(([key, values]) => (
+              <View style={style.filtersRow} key={key}>
+                <Text style={style.filterLabel}>
+                  {key.charAt(0).toUpperCase() + key.slice(1)}:
+                </Text>
+                <View style={style.filterButtonsContainer}>
+                  <FlatList
+                    horizontal
+                    data={Array.from(values)}
+                    keyExtractor={item => item}
+                    renderItem={({ item }) => renderFilterButton(item, key)}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+                <TouchableOpacity 
+                  style={style.clearBtn} 
+                  onPress={() => setFilters(f => ({ ...f, [key]: '' }))}
+                >
+                  <MaterialCommunityIcons name="close-circle-outline" size={20} color={Colors.RED} />
+                  <Text style={style.clearBtnText}>Limpiar</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          }
+
+          {/* Botón para limpiar todos los filtros */}
+          {(Object.entries(filterOptions).filter(([_, values]) => values.size > 0).length > 0 || filters.category || filters.search) && (
+            <TouchableOpacity style={style.clearAllBtn} onPress={clearAllFilters}>
+              <MaterialCommunityIcons name="broom" size={20} color={Colors.BLUE} />
+              <Text style={style.clearAllBtnText}>Limpiar todos los filtros</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
-      {loading && <ActivityIndicator size="large" color={Colors.BLUE} />}
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={style.productCard} onPress={() => { setSelectedProduct(item); setModalVisible(true); }}>
-            <Image source={{ uri: item.image }} style={style.productImg} />
-            <Text style={style.productName}>{item.name}</Text>
-            <Text style={style.productDesc}>{item.description?.slice(0, 50)}{item.description?.length > 50 ? '...' : ''}</Text>
-            <Text style={style.productPrice}>${item.price}</Text>
-          </TouchableOpacity>
-        )}
-        contentContainerStyle={style.productsList}
-        ListHeaderComponent={(
-          <>
-            <View style={style.categoriesRow}>
-              <FlatList
-                horizontal
-                data={categories}
-                keyExtractor={item => item}
-                renderItem={({ item }) => (
-                  <View style={style.categoryCard}>
-                    <Image source={require('../../../assets/images/defualt-category.png')} style={style.categoryImg} />
-                    <Text style={style.categoryName}>{item}</Text>
-                  </View>
-                )}
-                showsHorizontalScrollIndicator={false}
-              />
-            </View>
-            {bannersLoading && <ActivityIndicator size="large" color={Colors.BLUE} />}
-            {banners.length > 0 && (
-              <View style={style.bannerContainerNoShadow}>
-                <Carousel banners={banners} />
-              </View>
-            )}
-            {bannerError && <Text style={style.error}>{bannerError}</Text>}
-          </>
-        )}
-      />
+
+      {/* Lista de productos */}
+      {loading ? (
+        <View style={style.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.BLUE} />
+        </View>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          renderItem={renderProductItem}
+          contentContainerStyle={style.productsList}
+          ListHeaderComponent={renderListHeader}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {/* Modal de detalle del producto */}
       <ProductDetailModal
         visible={modalVisible}
         product={selectedProduct}
         onClose={() => setModalVisible(false)}
         onAddToCart={handleAddToCart}
       />
+
+      {/* Mensaje de error */}
       {error && <Text style={style.error}>{error}</Text>}
     </View>
   );
 }
 
 const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   searchContainerSmall: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
     marginVertical: 10,
-    marginHorizontal: 8,
+    marginHorizontal: 16,
     paddingHorizontal: 8,
     height: 40,
   },
@@ -195,159 +306,167 @@ const style = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'transparent',
   },
-  bannerContainerNoShadow: {
-    height: 160,
-    marginVertical: 8,
-    marginHorizontal: 8,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 24,
-    marginVertical: 12,
-    marginHorizontal: 8,
-    paddingHorizontal: 8,
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: 'transparent',
-    color: Colors.DARK,
-  },
-  filterIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    marginHorizontal: 8,
-  },
-  filterIconBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e5e5e5',
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    elevation: 1,
-  },
-  filterIconText: {
-    marginLeft: 8,
-    color: Colors.PRIMARY,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
   filtersPanel: {
     backgroundColor: '#f9f9f9',
     borderRadius: 16,
-    marginHorizontal: 8,
-    padding: 8,
+    marginHorizontal: 16,
+    padding: 12,
     marginBottom: 8,
     elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  filtersRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 6,
+    flexWrap: 'wrap',
+  },
+  filterLabel: {
+    fontWeight: 'bold',
+    marginRight: 8,
+    color: Colors.DARK,
+    minWidth: 80,
+  },
+  filterButtonsContainer: {
+    flex: 1,
+  },
+  filterBtn: {
+    marginHorizontal: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#eee',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  filterBtnActive: {
+    backgroundColor: Colors.PRIMARY,
+    borderColor: Colors.PRIMARY,
+  },
+  filterBtnText: {
+    fontSize: 13,
+    color: Colors.DARK,
+  },
+  filterBtnActiveText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  clearBtnText: {
+    color: Colors.RED,
+    fontSize: 12,
+    marginLeft: 2,
+  },
+  clearAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: 12,
+    backgroundColor: '#e5f0ff',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  clearAllBtnText: {
+    color: Colors.BLUE,
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginLeft: 4,
   },
   categoriesRow: {
-    marginVertical: 8,
-    marginHorizontal: 8,
+    marginVertical: 12,
+    marginHorizontal: 16,
   },
   categoryCard: {
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
     width: 80,
   },
   categoryImg: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#eee',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   categoryName: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
     color: Colors.DARK,
-  },
-  bannerContainer: {
-    height: 160,
-    marginVertical: 8,
-    marginHorizontal: 8,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 2,
+    fontWeight: '500',
   },
   productCard: {
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 16,
     margin: 8,
-    padding: 8,
+    padding: 12,
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    maxWidth: '46%',
   },
   productImg: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     borderRadius: 12,
     backgroundColor: '#eee',
     marginBottom: 8,
   },
   productName: {
     fontWeight: 'bold',
-    fontSize: 15,
-    marginBottom: 2,
+    fontSize: 14,
+    marginBottom: 4,
     color: Colors.DARK,
     textAlign: 'center',
   },
   productDesc: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.GRAY,
-    marginBottom: 4,
+    marginBottom: 6,
     textAlign: 'center',
   },
   productPrice: {
     fontWeight: 'bold',
     fontSize: 16,
     color: Colors.PRIMARY,
-    marginBottom: 2,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 8,
-  },
-  filtersRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 4,
-  },
-  filterBtn: {
-    marginHorizontal: 4,
-    padding: 6,
-    backgroundColor: '#eee',
-    borderRadius: 8,
-  },
-  filterBtnActive: {
-    backgroundColor: Colors.PRIMARY,
-    color: '#fff',
-  },
-  searchInput: {
-    marginVertical: 8,
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.GRAY,
-    backgroundColor: '#f9f9f9',
+    marginTop: 4,
   },
   productsList: {
-    paddingBottom: 16,
+    paddingHorizontal: 8,
+    paddingBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   error: {
     color: Colors.RED,
     textAlign: 'center',
     marginVertical: 8,
+    fontSize: 14,
   },
 });

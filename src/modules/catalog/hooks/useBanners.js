@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fetchBanners } from '../../../api/bannerService';
 
 export function useBanners() {
   const [banners, setBanners] = useState([]);
@@ -6,14 +7,15 @@ export function useBanners() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulación de carga de banners desde API
-    setTimeout(() => {
-      setBanners([
-        { id: 1, image: 'banner1.png' },
-        { id: 2, image: 'banner2.png' }
-      ]);
-      setLoading(false);
-    }, 1000);
+    setLoading(true);
+    fetchBanners()
+      .then((data) => {
+        setBanners(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+      });
   }, []);
 
   return { banners, loading, error };

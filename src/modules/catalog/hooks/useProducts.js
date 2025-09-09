@@ -18,19 +18,17 @@ export function useProducts() {
   });
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchProducts(filters);
-        setProducts(data);
-      } catch (err) {
-        setError('Error al cargar productos');
-      } finally {
+    setLoading(true);
+    fetchProducts()
+      .then((data) => {
+        setProducts(Array.isArray(data) ? data : []);
         setLoading(false);
-      }
-    };
-    load();
-  }, [filters]);
+      })
+      .catch((err) => {
+        setError('Error al cargar productos');
+        setLoading(false);
+      });
+  }, []);
 
   return {
     products,

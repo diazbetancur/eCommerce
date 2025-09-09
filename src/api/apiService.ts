@@ -1,21 +1,9 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import axios from 'axios';
+import { APP_CONFIG } from '../config/env';
 
-// Determine the correct base URL based on platform
 const getBaseUrl = () => {
-  if (__DEV__) {
-    if (Platform.OS === 'ios') {
-      return 'http://localhost:5134/api'; // OK en simulador iOS
-    }
-
-    if (Platform.OS === 'android') {
-      return 'http://10.0.2.2:5134/api'; // CORRECTO para emulador Android
-    }
-  }
-
-  // In production, use the actual API URL
-  return process.env.API_URL;
+  return APP_CONFIG.apiUrl;
 };
 
 const api = axios.create({
