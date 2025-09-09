@@ -39,7 +39,7 @@ export default function LoginForm() {
 
   return (
     <View style={style.container}>
-      <Image source={require('../../../assets/images/loging.png')} style={style.image} />
+      <Image source={require('../../../assets/app-icon.png')} style={style.image} />
       <View style={style.containerForm}>
         <View style={style.containerInput}>
           <Input
