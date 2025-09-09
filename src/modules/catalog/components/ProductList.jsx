@@ -2,19 +2,28 @@ import React from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export default function ProductList({ products, onSelectProduct }) {
+
+
+  console.log(products)
   return (
     <FlatList
       data={products}
       keyExtractor={item => item.id.toString()}
       numColumns={2}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.card} onPress={() => onSelectProduct(item)}>
-          <Image source={{ uri: item.image }} style={styles.img} />
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.desc}>{item.description?.slice(0, 50)}{item.description?.length > 50 ? '...' : ''}</Text>
-          <Text style={styles.price}>${item.price}</Text>
-        </TouchableOpacity>
-      )}
+      renderItem={({ item }) => {
+        const primaryImage = item.productImages.find(img => img.isPrimary) || item.productImages[0];
+        console.log('Product:', item);
+        console.log('Primary Image:', primaryImage);
+        const imageSource = primaryImage?.imageUrl || 'https://via.placeholder.com/100'; // Puedes cambiar por tu imagen local
+        return (        
+          <TouchableOpacity style={styles.card} onPress={() => onSelectProduct(item)}>
+            <Image source={{ uri: imageSource }} style={styles.img} />
+            <Text style={styles.name}>{item.name} dfasdf</Text>
+            <Text style={styles.desc}>{item.description?.slice(0, 50)}{item.description?.length > 50 ? '...' : ''}</Text>
+            <Text style={styles.price}>${item.price}</Text>
+          </TouchableOpacity>
+        )
+      }}
       contentContainerStyle={styles.list}
     />
   );
