@@ -1,15 +1,15 @@
-import { View, Image, StyleSheet, Alert, Dimensions } from 'react-native';
-import React, { useState } from 'react';
-import { Icon, Input } from 'react-native-elements';
 import { useFormik } from 'formik';
+import React, { useState } from 'react';
+import { Alert, Dimensions, Image, StyleSheet, View } from 'react-native';
+import { Icon, Input } from 'react-native-elements';
 import * as Yup from 'yup';
 
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useTranslation } from 'react-i18next';
 import Colors from '../../../assets/Colors';
 import Button from '../../../components/ButtonComponent';
-import useAuth from '../../../hooks/useAuth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../../credentials';
+import useAuth from '../../../hooks/useAuth';
 
 const { width } = Dimensions.get('window');
 
@@ -28,9 +28,7 @@ export default function LoginForm() {
     onSubmit: async (formValues) => {
       const { userName, password } = formValues;
       try {
-        console.log(userName, password);
         const userCredential = await signInWithEmailAndPassword(auth, userName, password);
-        console.log(userCredential.user);
         login(userCredential.user);
       } catch (error) {
         console.log(error);
@@ -41,7 +39,7 @@ export default function LoginForm() {
 
   return (
     <View style={style.container}>
-      <Image source={require('../../../assets/images/loging.png')} style={style.image} />
+      <Image source={require('../../../assets/app-icon.png')} style={style.image} />
       <View style={style.containerForm}>
         <View style={style.containerInput}>
           <Input

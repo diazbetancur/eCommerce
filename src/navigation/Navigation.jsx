@@ -1,20 +1,20 @@
-import * as React from 'react';
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import * as React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useTranslation } from 'react-i18next';
 
 import Colors from '../assets/Colors';
-import AccountLogged from '../screens/AccountScreens/AccountLogged';
-import OfferLogged from '../screens/OfferScreens/Offer';
 import CustomHeader from '../components/CustomHeader';
-import { useNotifications } from '../context/notificationContext';
-import LoyaltyScreen from '../screens/LoyalityScreens/LoyaltyScreen';
-import Home from '../features/products/screens/home';
 import { useCart } from '../context/CartContext';
+import { useNotifications } from '../context/notificationContext';
 import CartScreen from '../features/cart/screens/CartScreen';
+import Home from '../features/products/screens/home';
+import AccountLogged from '../screens/AccountScreens/AccountLogged';
+import LoyaltyScreen from '../screens/LoyalityScreens/LoyaltyScreen';
+import OfferLogged from '../screens/OfferScreens/Offer';
 
 const Tab = createBottomTabNavigator();
 
@@ -45,10 +45,9 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen
-          name="Loyalty"
+          name={t('Loyalty')}
           component={LoyaltyScreen}
           options={{
-            tabBarLabel: 'Lealtad',
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="star-outline" size={size} color={color} />
             )
@@ -82,7 +81,7 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen
-          name="Carrito"
+          name={t('cartShopping')}
           component={CartScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -92,7 +91,7 @@ export default function Navigation() {
         ></Tab.Screen>
 
         <Tab.Screen
-          name={t('Account')}
+          name={t('tabAccount')}
           component={AccountLogged}
           options={{
             tabBarIcon: ({ color, size }) => (

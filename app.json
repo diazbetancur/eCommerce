@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AMPM-app",
-    "slug": "AMPM-app",
+    "name": "ECommerce-app",
+    "slug": "ECommerce-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,22 +10,26 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFF3E6"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FFF3E6"
+      },
+      "package": "com.diazbetancur.ECommerceapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-localization"
-    ]
+    "plugins": ["expo-localization"],
+    "extra": {
+      "eas": {
+        "projectId": "7fa90564-c0e3-4a27-bfbc-1b379724b5c5"
+      }
+    }
   }
 }

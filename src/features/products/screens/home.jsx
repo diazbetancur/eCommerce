@@ -1,13 +1,14 @@
-import { View, StyleSheet, Text, FlatList, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import Colors from '../../../assets/Colors';
-import useAuth from '../../../hooks/useAuth';
-import InfinitePoints from '../../../components/InfinitePoints';
 import Carousel from '../../../components/carousel';
-import { useProducts } from '../hooks/useProducts';
+import { useCart } from '../../../context/CartContext';
+import useAuth from '../../../hooks/useAuth';
+import CategoriesList from '../components/CategoriesList';
 import ProductCard from '../components/ProductCard';
 import ProductDetailModal from '../components/ProductDetailModal';
-import { useCart } from '../../../context/CartContext';
+import { useBanners } from '../hooks/useBanners';
+import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
   const { auth } = useAuth();
@@ -15,19 +16,46 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const { addToCart } = useCart();
+  const [search, setSearch] = useState('');
+  const { banners, loading: bannersLoading, error: bannerError } = useBanners();
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const handleAddToCart = (product, quantity) => {
     addToCart(product, quantity);
     setModalVisible(false);
   };
 
+  const filteredProducts = products.filter((product) => {
+    const term = search.toLowerCase();
+    const matchesSearch =
+      product.name.toLowerCase().includes(term) ||
+      product.description?.toLowerCase().includes(term) ||
+      product.category?.toLowerCase().includes(term);
+
+    const matchesCategory = !selectedCategoryId || product.categoryId === selectedCategoryId;
+
+    return matchesSearch && matchesCategory;
+  });
+
   return (
     <View style={style.container}>
-      {/* <Carousel style={style.banner} banners={banners} /> */}
+      {bannersLoading && <ActivityIndicator size="large" color={Colors.BLUE} />}
+      {banners.length > 0 && (
+        <View style={{ height: 160 }}>
+          <Carousel banners={banners} />
+        </View>
+      )}
+      {bannerError && <Text style={style.error}>{bannerError}</Text>}
+      <CategoriesList onCategorySelected={(id) => setSelectedCategoryId(id)} />
       {loading && <ActivityIndicator size="large" color={Colors.BLUE} />}
-      {error && <Text style={style.error}>Error: {error}</Text>}
+      <TextInput
+        placeholder="Buscar productos..."
+        value={search}
+        onChangeText={setSearch}
+        style={style.searchInput}
+      />
       <FlatList
-        data={products}
+        data={filteredProducts}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={style.productList}
@@ -87,5 +115,13 @@ const style = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     marginTop: 20
+  },
+  searchInput: {
+    height: 40,
+    borderColor: Colors.GRAY,
+    borderWidth: 1,
+    borderRadius: 8,
+    margin: 10,
+    paddingHorizontal: 10
   }
 });
