@@ -10,8 +10,15 @@ export class ClientConfigService {
 
   // Cargar config local
   loadLocalConfig() {
-    this.config = LOCAL_CONFIG;
-    return this.config;
+    console.log('📁 Loading local config...');
+    try {
+      this.config = LOCAL_CONFIG;
+      console.log('✅ Local config loaded successfully:', this.config ? 'OK' : 'EMPTY');
+      return this.config;
+    } catch (error) {
+      console.error('❌ Error loading local config:', error);
+      throw error;
+    }
   }
 
   // Cargar config desde API
@@ -24,6 +31,7 @@ export class ClientConfigService {
       return this.config;
     } catch (error) {
       // Si falla, usa la config local como fallback
+      console.warn('Failed to load config from API, using local config:', error.message);
       this.config = LOCAL_CONFIG;
       return this.config;
     }

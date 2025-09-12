@@ -1,6 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Carousel from '../../../components/carousel';
 
 export default function ProductDetailModal({ visible, product, onClose, onAddToCart }) {

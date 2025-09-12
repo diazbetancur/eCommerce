@@ -1,6 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function SupportFloatingButton({ visible, onSelectOption }) {
   const [open, setOpen] = React.useState(false);

@@ -1,8 +1,8 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../../assets/Colors';
-import { fetchLoyaltyData, fetchRedeemableProducts } from '../services/loyaltyService';
+import { fetchLoyaltyData } from '../services/loyaltyService';
 
 const mockImages = [
   require('../../../assets/images/defualt-category.png'),
@@ -17,7 +17,6 @@ const mockHistorial = [
 
 export default function LoyaltyScreen() {
   const [loyalty, setLoyalty] = useState(null);
-  const [products, setProducts] = useState([]);
   const [selectedReward, setSelectedReward] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [tab, setTab] = useState('redencion'); // 'redencion' | 'estado' | 'referidos'
@@ -25,12 +24,7 @@ export default function LoyaltyScreen() {
 
   useEffect(() => {
     fetchLoyaltyData(userId).then(setLoyalty);
-    fetchRedeemableProducts().then(setProducts);
   }, []);
-
-  // Simular descripción corta y larga
-  const getShortDesc = (name) => `Beneficio: ${name}. Canjea por puntos.`;
-  const getLongDesc = (name) => `Este beneficio te permite obtener ${name} en tu próxima compra. Aplica condiciones y restricciones. Canjea usando tus puntos acumulados.`;
 
   if (!loyalty) return <View style={styles.container}><Text>Cargando...</Text></View>;
 
@@ -101,7 +95,7 @@ export default function LoyaltyScreen() {
               <Text style={styles.historialTh}>Puntos obtenidos</Text>
             </View>
             {mockHistorial.map((row, idx) => (
-              <View style={styles.historialRow} key={idx}>
+              <View style={styles.historialRow} key={`${row.fecha}-${row.valor}-${idx}`}>
                 <Text style={styles.historialTd}>{row.fecha}</Text>
                 <Text style={styles.historialTd}>${row.valor}</Text>
                 <Text style={styles.historialTd}>{row.puntos}</Text>
