@@ -8,6 +8,8 @@ interface StoreConfig {
     secondaryColor: string;
     accentColor: string;
     logoUrl: string;
+    fontFamily?: string;
+    borderRadius?: string;
   };
   currency: {
     code: string;
@@ -273,7 +275,9 @@ class StoreConfigService {
         primaryColor: '#FF3366',
         secondaryColor: '#3366FF',
         accentColor: '#33FF66',
-        logoUrl: 'https://via.placeholder.com/200x80/FF3366/FFFFFF?text=MOCK+LOGO'
+        logoUrl: 'https://via.placeholder.com/200x80/FF3366/FFFFFF?text=MOCK+LOGO',
+        fontFamily: 'Roboto, Arial, sans-serif',
+        borderRadius: '12px'
       },
       currency: {
         code: 'COP',
@@ -307,7 +311,9 @@ class StoreConfigService {
         primaryColor: '#007bff',
         secondaryColor: '#6c757d',
         accentColor: '#28a745',
-        logoUrl: ''
+        logoUrl: '',
+        fontFamily: 'Arial, sans-serif',
+        borderRadius: '8px'
       },
       currency: {
         code: 'USD',

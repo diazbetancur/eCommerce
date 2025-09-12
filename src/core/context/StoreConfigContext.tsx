@@ -9,7 +9,9 @@ const DEFAULT_CONFIG: StoreConfig = {
     primaryColor: '#000000',
     secondaryColor: '#666666',
     accentColor: '#007bff',
-    logoUrl: ''
+    logoUrl: '',
+    fontFamily: 'Arial',
+    borderRadius: '8px'
   },
   currency: {
     code: 'USD',

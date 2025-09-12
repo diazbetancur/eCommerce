@@ -107,7 +107,14 @@ export function useBranding(): UseBrandingReturn {
     const root = document.documentElement;
     const { branding, currency } = config;
 
-    // Aplicar colores principales
+    // Variables específicas solicitadas
+    root.style.setProperty('--primary-color', branding.primaryColor);
+    root.style.setProperty('--secondary-color', branding.secondaryColor);
+    root.style.setProperty('--accent-color', branding.accentColor);
+    root.style.setProperty('--font-family', branding.fontFamily || 'Arial');
+    root.style.setProperty('--border-radius', branding.borderRadius || '8px');
+
+    // Variables adicionales para compatibilidad
     root.style.setProperty('--color-primary', branding.primaryColor);
     root.style.setProperty('--color-secondary', branding.secondaryColor);
     root.style.setProperty('--color-accent', branding.accentColor);
@@ -139,6 +146,8 @@ export function useBranding(): UseBrandingReturn {
       primary: branding.primaryColor,
       secondary: branding.secondaryColor,
       accent: branding.accentColor,
+      fontFamily: branding.fontFamily || 'Arial',
+      borderRadius: branding.borderRadius || '8px',
       currency: currency.code,
       logo: branding.logoUrl || 'No logo'
     });
