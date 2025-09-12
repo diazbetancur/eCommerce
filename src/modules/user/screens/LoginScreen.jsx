@@ -25,7 +25,7 @@ export default function LoginScreen() {
     onSubmit: async (formValues) => {
       const { userName, password } = formValues;
       try {
-        const user = await authService.login(userName, password);
+        await authService.login(userName, password);
         // Aquí puedes guardar el usuario en contexto o navegar
         Alert.alert('Login exitoso', t('welcome'), [{ text: 'OK' }]);
       } catch (error) {

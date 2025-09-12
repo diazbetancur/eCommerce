@@ -45,7 +45,7 @@ const resources = {
 const initializeI18n = async () => {
   try {
     const storedLanguage = await AsyncStorage.getItem('appLanguage');
-    const initialLanguage = storedLanguage || Localization.locale.split('-')[0];
+    const initialLanguage = storedLanguage || Localization.getLocales()[0]?.languageCode || 'en';
 
     await i18n.use(initReactI18next).init({
       fallbackLng: 'en',

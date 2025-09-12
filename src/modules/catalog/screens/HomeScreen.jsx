@@ -1,6 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { fetchCategories } from '../../../api/categoryService';
 import Colors from '../../../assets/Colors';
 import { useCart } from '../../../core/context/CartContext';
@@ -12,7 +12,7 @@ import { useBanners } from '../hooks/useBanners';
 import { useProducts } from '../hooks/useProducts';
 
 export default function HomeScreen() {
-  const { products: allProducts, loading, error, filters, setFilters } = useProducts();
+  const { products: allProducts, error, filters, setFilters } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -167,7 +167,7 @@ export default function HomeScreen() {
           }
 
           {/* Botón para limpiar todos los filtros */}
-          {(Object.entries(filterOptions).filter(([_, values]) => values.size > 0).length > 0 || filters.category || filters.search) && (
+          {Boolean(Object.entries(filterOptions).filter(([_, values]) => values.size > 0).length > 0 || filters.category || filters.search) && (
             <TouchableOpacity style={style.clearAllBtn} onPress={clearAllFilters}>
               <MaterialCommunityIcons name="broom" size={20} color={Colors.BLUE} />
               <Text style={style.clearAllBtnText}>Limpiar todos los filtros</Text>

@@ -6,7 +6,12 @@ import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import i18n from './src/assets/i18n';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import SupportFloatingButton from './src/components/SupportFloatingButton';
+
+// TEST: Verificar variables de entorno
+import { EXPO_PUBLIC_BASE_URL } from '@env';
+import { APP_CONFIG } from './src/config/env';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider } from './src/core/context/CartContext';
 import { LoyaltyProvider } from './src/core/context/LoyaltyContext';
@@ -16,6 +21,12 @@ import { WishlistProvider } from './src/core/context/WishlistContext';
 import AppNavigator from './src/core/navigation/AppNavigator';
 import { ClientConfigService } from './src/core/services/clientConfig.service';
 import { supportConfigService } from './src/core/services/supportConfig.service';
+console.log('🔧 [App.js] Testing environment variables...');
+console.log('📱 [App.js] From @env - EXPO_PUBLIC_BASE_URL:', EXPO_PUBLIC_BASE_URL);
+console.log('⚙️ [App.js] From APP_CONFIG - apiUrl:', APP_CONFIG.apiUrl);
+console.log(
+  '🌐 [App.js] Expected URL: https://back-ecommerce-e0efcdeke8a9g6gb.eastus-01.azurewebsites.net/api'
+);
 
 const clientConfigService = new ClientConfigService();
 
@@ -24,17 +35,32 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // DEBUG: Logging para diagnóstico
+    console.log('🔧 App iniciando...');
+    console.log('🌍 Environment:', process.env.NODE_ENV);
+
     // Cambia la URL por la de tu API si quieres cargar desde API
     const apiUrl = null; // Ejemplo: 'https://api.tuempresa.com/config'
     const loadConfig = async () => {
-      let config;
-      if (apiUrl) {
-        config = await clientConfigService.loadConfigFromApi(apiUrl);
-      } else {
-        config = clientConfigService.loadLocalConfig();
+      try {
+        console.log('📝 Cargando configuración...');
+        let config;
+        if (apiUrl) {
+          config = await clientConfigService.loadConfigFromApi(apiUrl);
+        } else {
+          config = clientConfigService.loadLocalConfig();
+        }
+        console.log('✅ Configuración cargada:', config ? 'OK' : 'FAILED');
+        setClientConfig(config);
+      } catch (error) {
+        console.error('❌ Error loading config:', error);
+        // Fallback a configuración por defecto
+        const fallbackConfig = clientConfigService.loadLocalConfig();
+        console.log('🔄 Using fallback config:', fallbackConfig ? 'OK' : 'FAILED');
+        setClientConfig(fallbackConfig);
+      } finally {
+        setLoading(false);
       }
-      setClientConfig(config);
-      setLoading(false);
     };
     loadConfig();
   }, []);
@@ -65,25 +91,27 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <I18nextProvider i18n={i18n}>
-        <UserProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <NotificationProvider>
-                  <LoyaltyProvider>
-                    <AppNavigator clientConfig={clientConfig} />
-                    <StatusBar style="auto" />
-                  </LoyaltyProvider>
-                </NotificationProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </UserProvider>
-      </I18nextProvider>
-      <SupportFloatingButton visible={showSupport} onSelectOption={handleSupportOption} />
-    </View>
+    <ErrorBoundary>
+      <View style={styles.container}>
+        <I18nextProvider i18n={i18n}>
+          <UserProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <NotificationProvider>
+                    <LoyaltyProvider>
+                      <AppNavigator clientConfig={clientConfig} />
+                      <StatusBar style="auto" />
+                    </LoyaltyProvider>
+                  </NotificationProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </UserProvider>
+        </I18nextProvider>
+        <SupportFloatingButton visible={showSupport} onSelectOption={handleSupportOption} />
+      </View>
+    </ErrorBoundary>
   );
 }
 

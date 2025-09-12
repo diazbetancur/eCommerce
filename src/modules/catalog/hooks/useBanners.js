@@ -4,7 +4,7 @@ import { fetchBanners } from '../../../api/bannerService';
 export function useBanners() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   useEffect(() => {
     setLoading(true);

@@ -1,4 +1,9 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "ignoreDeprecations": "5.0",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["**/*", "src/types/env.d.ts"],
   "extends": "expo/tsconfig.base"
 }

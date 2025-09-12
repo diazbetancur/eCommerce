@@ -1,8 +1,7 @@
 // Navegador principal desacoplado y dinámico para arquitectura limpia
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Importa los módulos dinámicamente según configuración
 // Ejemplo de componentes base
@@ -18,7 +17,6 @@ import RedemptionHistoryScreen from '../../modules/user/screens/RedemptionHistor
 import ReferralHistoryScreen from '../../modules/user/screens/ReferralHistoryScreen';
 
 const Tab = createBottomTabNavigator();
-// const Drawer = createDrawerNavigator();
 
 export default function AppNavigator({ clientConfig }) {
   // Determina los módulos activos según la config
@@ -32,10 +30,6 @@ export default function AppNavigator({ clientConfig }) {
       'topup', 'integrations', 'analytics', 'extras'
     ];
   }
-
-  // Agrupa módulos secundarios en un menú "Más"
-  const mainModules = ['products', 'cart', 'loyalty', 'user'];
-  const secondaryModules = activeModules.filter(m => !mainModules.includes(m));
 
   const Stack = createStackNavigator();
   const AccountStack = () => (
